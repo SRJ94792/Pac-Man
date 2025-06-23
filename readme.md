@@ -1,126 +1,211 @@
-# Pac-Man Game in Assembly Language
+# File System Simulator with N-ary Tree and AVL Tree
 
-This is an implementation of the classic Pac-Man game written in x86 Assembly Language using the Irvine32 library. The game features multiple levels, a menu system, high score display, and basic gameplay mechanics such as collecting dots, avoiding ghosts, and progressing through levels.
+This project implements a file system simulator using an N-ary tree to represent the directory structure and an AVL tree to index files for efficient searching. The implementation supports various operations such as creating directories, adding/deleting files and folders, merging folders, and traversing the file system and AVL tree in different orders.
 
 ## Table of Contents
+- [Overview](#overview)
 - [Features](#features)
-- [Requirements](#requirements)
-- [Setup and Compilation](#setup-and-compilation)
-- [How to Play](#how-to-play)
-- [File Structure](#file-structure)
-- [Code Overview](#code-overview)
+- [Classes and Structures](#classes-and-structures)
+- [Usage](#usage)
+- [Dependencies](#dependencies)
 - [Limitations](#limitations)
-- [Contributing](#contributing)
-- [Author](#author)
+- [How to Run](#how-to-run)
+- [Test Cases](#test-cases)
+- [Future Improvements](#future-improvements)
+
+## Overview
+
+The code simulates a file system where:
+- An **N-ary tree** represents the hierarchical structure of directories and files.
+- An **AVL tree** indexes files based on their first letter (converted to uppercase) for quick lookup.
+- The system supports operations like file/folder creation, deletion, merging, and traversal, along with file and folder size calculations.
+
+The implementation is templated to allow flexibility in the data type used for file and folder names (typically `string`).
 
 ## Features
-- **Menu System**: Includes options to play the game, view instructions, check high scores, or exit.
-- **Multiple Levels**: Three distinct levels with different maze layouts.
-- **Gameplay Mechanics**:
-  - Control Pac-Man using W (up), S (down), A (left), and D (right) keys.
-  - Collect dots (1 point each) and fruits (5 points each) to increase your score.
-  - Avoid ghosts that move through predefined paths.
-  - Three lives per game session; lose a life upon ghost collision.
-- **Graphical Interface**: ASCII-based graphics for the maze, Pac-Man, ghosts, and UI elements.
-- **Scoring System**: Tracks and displays the player's score and level progress.
-- **High Score Screen**: Displays a static list of top scores.
-- **End Screen**: Shows the player's name, level reached, and final score upon game completion.
 
-## Requirements
-- **Operating System**: Windows (32-bit or 64-bit with 32-bit compatibility).
-- **Assembler**: MASM (Microsoft Macro Assembler).
-- **Irvine32 Library**: Required for console I/O and graphics functions.
-- **Development Environment**: Visual Studio or a similar IDE configured for MASM.
+### N-ary Tree Operations
+- Create a directory tree from a given root path.
+- Add files and folders to specific paths.
+- Delete files and folders.
+- Merge two folders by moving contents from one to another.
+- Display the tree structure (not fully implemented).
+- Traverse the N-ary tree in pre-order, in-order, post-order, and level-order, returning a comma-separated string of node names.
+- Calculate the size of files and folders.
 
-## Setup and Compilation
-1. **Install MASM**:
-   - Ensure MASM is installed and configured in your development environment.
-2. **Download Irvine32 Library**:
-   - Obtain the Irvine32 library from the official source or Kip Irvine's website.
-   - Place `Irvine32.inc` and `Irvine32.lib` in your project directory or a directory included in your assembler's path.
-3. **Project Setup**:
-   - Create a new MASM project in Visual Studio or your preferred IDE.
-   - Add `20I-2610.asm` to the project.
-   - Link the Irvine32 library in your project settings.
-4. **Compile and Run**:
-   - Build the project to generate the executable.
-   - Run the executable in a Windows command prompt or through the IDE.
+### AVL Tree Operations
+- Insert files into the AVL tree based on their first letter.
+- Search for files by name, returning their full paths.
+- Delete files from the AVL tree.
+- Traverse the AVL tree in pre-order, in-order, post-order, and level-order (only level-order implemented).
+- Maintain balance using left-left (LL) and right-left (RL) rotations.
 
-## How to Play
-1. **Start the Game**:
-   - Launch the executable.
-   - Enter your name on the opening screen and press Enter.
-2. **Main Menu**:
-   - **G**: Start the game.
-   - **I**: View instructions.
-   - **H**: View high scores.
-   - **E**: Exit the game.
-3. **Gameplay**:
-   - Use **W**, **S**, **A**, **D** to move Pac-Man through the maze.
-   - Collect all dots (`.`) to progress to the next level.
-   - Avoid ghosts (represented by colored blocks).
-   - Collect fruits (`~`) for bonus points.
-   - Press **X** to exit the game at any time.
-4. **Game Over**:
-   - The game ends when you lose all three lives or press **X**.
-   - The end screen displays your name, level reached, and final score.
+### File System Operations
+- Add files with a `.txt` extension to the AVL tree for indexing.
+- Search for files and return their paths.
+- Calculate file sizes using file streams.
+- Calculate folder sizes by summing the sizes of all contained files.
 
-## File Structure
-- `20I-2610.asm`: The main source code file containing all game logic and UI elements.
-- `Irvine32.inc`: Irvine32 library include file (required, not included).
-- `Irvine32.lib`: Irvine32 library file (required, not included).
+## Classes and Structures
 
-## Code Overview
-The code is structured into multiple procedures to handle different aspects of the game:
-- **Main Menu and UI**:
-  - `drawfrontpage`: Displays the opening screen for name input.
-  - `drawmenupage`: Renders the main menu and handles user input.
-  - `drawinspage`: Shows the instructions screen.
-  - `drawhpage`: Displays the high score screen.
-  - `drawengpage`: Renders the game over screen with final stats.
-- **Gameplay**:
-  - `d2`, `d4`, `d6`: Initialize and draw levels 3, 2, and 1, respectively.
-  - `d3`, `d5`, `d7`: Handle the game loop for each level, including player and ghost movement.
-  - `DrawPlayer`, `UpdatePlayer`: Render and update Pac-Man's position.
-  - `d8`, `d11`, `d16`: Draw ghosts at their respective positions.
-  - `d10`, `d13`, `d18`: Update ghost positions based on predefined paths.
-  - `d15`: Check for collisions with dots or fruits and update the score.
-  - `d19`, `d20`, `d21`: Detect collisions with ghosts.
-  - `d22`: Check if all dots are collected to advance to the next level.
-  - `d23`, `d24`: Handle Pac-Man's wrap-around movement at maze edges.
-- **Graphics**:
-  - `drawcharg`: Custom procedure to render ASCII characters with specific colors and symbols (e.g., walls, corners).
+### 1. `Node<T>`
+- Represents a node in the N-ary tree.
+- Contains a vector of child pointers, a parent pointer, and data (file/folder name).
+- Used to build the hierarchical file system structure.
 
-**Key Variables**:
-- `xPos`, `yPos`: Pac-Man's current position.
-- `bx1`, `by1`, `bx2`, `by2`, `bx3`, `by3`: Ghost positions.
-- `score`: Player's current score.
-- `liv`: Number of remaining lives.
-- `level`: Current game level.
-- `nameste`: Buffer for player's name.
-- `lvl1`, `lvl2`, `lvl3`: ASCII maps for the three levels.
+### 2. `Queue<T>`
+- A templated queue implemented using a linked list.
+- Used for level-order traversal of both N-ary and AVL trees.
+
+### 3. `AvlNode<T>`
+- Represents a node in the AVL tree.
+- Stores a character (first letter of a file name), a vector of N-ary tree nodes (files starting with that letter), and left/right child pointers.
+
+### 4. `AVLTree<T>`
+- Manages the AVL tree for file indexing.
+- Provides methods for insertion, deletion, searching, balancing, and traversal.
+
+### 5. `NaryTree<T>`
+- Manages the N-ary tree representing the file system.
+- Integrates with the AVL tree for file indexing.
+- Supports file/folder operations and tree traversals.
+
+## Usage
+
+The code is designed to be used with a testing framework like Google Test (GTest) to verify functionality. Below are some key operations:
+
+### Create a Tree
+```cpp
+NaryTree<string> tree;
+tree.CreateTree("./root_directory");
+```
+This initializes the N-ary tree by reading the directory structure from the given path.
+
+### Add a File
+```cpp
+tree.addFile("./root_directory/subfolder", "example.txt");
+```
+Adds a file named `example.txt` to the specified path and indexes it in the AVL tree.
+
+### Delete a File
+```cpp
+tree.deleteFile("example.txt");
+```
+Removes the file from the N-ary tree and its entry from the AVL tree.
+
+### Merge Folders
+```cpp
+tree.MergeFolder("./root_directory/folder1", "./root_directory/folder2");
+```
+Moves all contents from `folder2` to `folder1` and updates the AVL tree.
+
+### Search for a File
+```cpp
+string* paths = tree.getAVL().searchFile("example.txt");
+```
+Returns an array of paths where `example.txt` is found, or `NULL` if not found.
+
+### Traverse the Tree
+```cpp
+string levelOrder = tree.levelOrderTraversal();
+string avlLevelOrder = tree.getAVL().levelOrderTraversal();
+```
+Returns a comma-separated string of node names in the specified traversal order.
+
+### Calculate Sizes
+```cpp
+int fileSize = tree.sizeFile("example.txt");
+int folderSize = tree.sizeFolder("./root_directory/subfolder");
+```
+
+## Dependencies
+
+- C++ Standard Library (`<iostream>`, `<fstream>`, `<vector>`, `<sstream>`)
+- POSIX directory handling (`<dirent.h>`) for reading directory contents
+- Google Test (GTest) for unit testing (not included in the code but referenced for test cases)
+
+Ensure a POSIX-compliant environment (e.g., Linux, macOS) for directory operations. Windows may require modifications or a different library (e.g., `<filesystem>`).
 
 ## Limitations
-- **Static High Scores**: The high score table is hardcoded and not saved between sessions.
-- **Ghost AI**: Ghosts follow fixed paths without intelligent pursuit of Pac-Man.
-- **Single Player**: No multiplayer or additional game modes.
-- **No Sound**: The commented-out `libwinmm.inc` suggests sound support was planned but not implemented.
-- **Limited Levels**: Only three levels are available.
-- **Error Handling**: Minimal error checking for invalid inputs or edge cases.
 
-## Contributing
-Contributions are welcome! To contribute:
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Make changes and test thoroughly.
-4. Submit a pull request with a clear description of your changes.
+### Incomplete Implementations
+- `preorderTraversal`, `postorderTraversal`, and `inorderTraversal` for the AVL tree are not implemented.
+- `DisplayTreeForm` for the N-ary tree is not implemented.
+- `AddFolder` is not fully implemented.
 
-Potential improvements:
-- Add dynamic high score saving/loading.
-- Implement smarter ghost AI.
-- Add sound effects using the Windows multimedia library.
-- Expand the number of levels or add difficulty settings.
-- Improve error handling and input validation.
+### Error Handling
+- Limited error checking for invalid paths or file operations.
+- Assumes valid input for paths and file names.
 
-## Author
-- **Muhammad Saad Raza**
+### Memory Management
+- Manual memory management with `new` and `delete` may lead to memory leaks if not handled carefully.
+- No destructor to clean up the N-ary or AVL trees.
+
+### Assumptions
+- File names with `.txt` extension are indexed in the AVL tree.
+- Paths start with `./` and use `/` as the separator.
+- AVL tree keys are uppercase first letters of file names.
+
+### Platform Dependency
+- Directory operations rely on `<dirent.h>`, which is POSIX-specific.
+
+## How to Run
+
+### 1. Compile the Code
+Ensure you have a C++ compiler (e.g., `g++`) and a POSIX-compliant environment.
+```bash
+g++ -std=c++11 main.cpp -o filesystem_simulator
+```
+Replace `main.cpp` with a file containing the main function and test cases.
+
+### 2. Run Tests
+Use Google Test to run predefined test cases. Link the code with GTest libraries:
+```bash
+g++ -std=c++11 main.cpp -lgtest -lgtest_main -pthread -o test
+./test
+```
+
+### 3. Directory Setup
+Create a directory structure (e.g., `./root_directory`) with files and folders for testing. Ensure the program has read/write permissions.
+
+## Test Cases
+
+Refer to the GTest framework for detailed test cases. Examples of expected outputs:
+
+### Level-Order Traversal (N-ary Tree)
+- **Input**: Directory with `logs`, `powerLogs`, `timeUsageLog`, `voltageLogs`, `systemlog.txt`
+- **Output**: `"logs,powerLogs,timeUsageLog,voltageLogs,systemlog.txt"`
+
+### AVL Tree Level-Order Traversal
+- **Input**: Files `systemlog.txt`, `sample.txt`
+- **Output**: `"S"` (first letters of files in level-order)
+
+### File Search
+- **Input**: `searchFile("systemlog.txt")`
+- **Output**: Array of paths, e.g., `[./logs/systemlog.txt]`
+
+### File/Folder Deletion
+- **Input**: `deleteFile("systemlog.txt")`
+- **Output**: `true` if deleted successfully
+
+### Folder Merge
+- **Input**: `MergeFolder("./folder1", "./folder2")`
+- **Output**: `true` if merged successfully
+
+## Future Improvements
+
+- Implement missing traversal methods (`preorderTraversal`, `postorderTraversal`, `inorderTraversal`) for the AVL tree.
+- Complete the `AddFolder` and `DisplayTreeForm` functions.
+- Add robust error handling for invalid paths, non-existent files, and permission issues.
+- Implement a destructor to clean up memory for the N-ary and AVL trees.
+- Support cross-platform directory operations using `<filesystem>` for Windows compatibility.
+- Optimize memory usage and avoid redundant string operations.
+- Add support for file extensions other than `.txt` in the AVL tree.
+
+## License
+
+This project is for educational purposes and does not include a specific license. Modify and use it as needed for learning or assignments.
+
+---
+
+This README provides an overview of the code, its functionality, and guidelines for usage. For further details, refer to the source code comments and test cases.
